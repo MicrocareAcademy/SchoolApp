@@ -16,7 +16,9 @@ public partial class StudentDetail
     public string? Password { get; set; }
 
     public int ClassId { get; set; }
+    
 
+    // Navigation Properties
     public virtual Class Class { get; set; } = null!;
 
     public virtual ICollection<StudentSubject> StudentSubjects { get; } = new List<StudentSubject>();

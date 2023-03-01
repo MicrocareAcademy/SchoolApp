@@ -1,8 +1,64 @@
-﻿
+﻿@model IList<SchoolApp.Entities.StudentDetail>
+
 @{
     ViewData["Title"] = "StudentsList";
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
-<h1>StudentsList</h1>
+<div>
+    <h2>Students List</h2>
+
+    <div class="row">
+        <table class="table table-striped">
+             <thead class="thead-dark">
+                    <tr>
+                        <th>
+                            First Name
+                        </th>
+                        <th>
+                            Last Name
+                        </th>
+                        <th>
+                            Email
+                        </th>
+                        <th>
+                            Class
+                        </th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @*// here Model is representing list of studentDetails*@
+                @foreach(var student in Model)
+                {
+                  <tr>
+                      <td>
+                          @student.FName
+                      </td>
+                      <td>
+                          @student.LName
+                      </td>
+                      <td>
+                          @student.Email
+                      </td>
+                      <td>
+                          @*we are using navigation property to display class*@
+                          @student.Class.Name   
+                      </td>
+                      
+                      <td>
+
+                      </td>
+                  </tr>
+
+                }
+                </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+
 

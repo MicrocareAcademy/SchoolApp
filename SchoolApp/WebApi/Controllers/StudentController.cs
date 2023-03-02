@@ -80,11 +80,31 @@ namespace SchoolApp.WebApi.Controllers
             studentDetail.Email = model.email;
             studentDetail.Password = model.password;
 
+            
             _schoolDbContext.StudentDetails.Add(studentDetail);
-
             _schoolDbContext.SaveChanges();
 
-            return Ok(studentDetail);
+            if (model.subject?.Count > 0)
+            {
+                
+                foreach (var subjectId in model.subject)
+                {
+                    var studentSubject = new StudentSubject
+                    {
+                         StudentId = studentDetail.Id,
+                         SubjectId = subjectId
+                         
+                    };
+
+                    _schoolDbContext.StudentSubjects.Add(studentSubject);
+                }
+
+                _schoolDbContext.SaveChanges();
+            }
+
+            
+
+            return Ok();
 
         }
 
@@ -107,7 +127,7 @@ namespace SchoolApp.WebApi.Controllers
 
             _schoolDbContext.SaveChanges();
 
-            return Ok(studentDetail);
+            return Ok();
         }
         
     }

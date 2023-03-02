@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SchoolApp.Entities;
 using SchoolApp.WebApi.Models;
 
@@ -10,7 +11,7 @@ namespace SchoolApp.WebApi.Controllers
     [ApiController]
     public class StudentController : ControllerBase
     {
-        private readonly SchoolDbContext _schoolDbContext;
+        private SchoolDbContext _schoolDbContext;
 
         public StudentController()
         {
@@ -21,20 +22,34 @@ namespace SchoolApp.WebApi.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var studentEntities = _schoolDbContext.StudentDetails.ToList();
+            var studentEntities = _schoolDbContext.StudentDetails.Include(p=>p.StudentSubjects).ToList();
 
             var studentsData = new List<StudentModel>();
 
             foreach (var studentEntity in studentEntities)
             {
+                // subject model create and also assign the values to properties
                 var studentObj = new StudentModel
                 {
                     class_id = studentEntity.ClassId,
                     student_name = studentEntity.FullName,
                     email = studentEntity.Email,
-                    password = studentEntity.Password,
-                    subject = studentEntity.StudentSubjects?.Select(p => p.SubjectId).ToList()
+                    password = studentEntity.Password
                 };
+
+                // we will loop thrpugh subjects of students and we will take subject ids and 
+                // add to list
+                var subjectIds = new List<int>();
+                if(studentEntity.StudentSubjects != null && studentEntity.StudentSubjects.Count > 0)
+                {
+                    foreach(var subject in studentEntity.StudentSubjects)
+                    {
+                        subjectIds.Add(subject.SubjectId);
+                    }
+                }
+
+                // assing the subject ids
+                studentObj.subject = subjectIds;
 
                 studentsData.Add(studentObj);
             }
@@ -46,7 +61,7 @@ namespace SchoolApp.WebApi.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            var studentEntity = _schoolDbContext.StudentDetails.FirstOrDefault(p=>p.Id == id); 
+            var studentEntity = _schoolDbContext.StudentDetails.Include(p=>p.StudentSubjects).FirstOrDefault(p=>p.Id == id); 
 
             if (studentEntity == null)
             {
@@ -62,6 +77,19 @@ namespace SchoolApp.WebApi.Controllers
                 subject = studentEntity.StudentSubjects?.Select(p => p.SubjectId).ToList()
             };
 
+            // we will loop thrpugh subjects of students and we will take subject ids and 
+            // add to list
+            var subjectIds = new List<int>();
+            if (studentEntity.StudentSubjects != null && studentEntity.StudentSubjects.Count > 0)
+            {
+                foreach (var subject in studentEntity.StudentSubjects)
+                {
+                    subjectIds.Add(subject.SubjectId);
+                }
+            }
+
+            studentObj.subject = subjectIds;
+
             return Ok(studentObj);
         }
 
@@ -75,7 +103,12 @@ namespace SchoolApp.WebApi.Controllers
             
             var studentDetail = new StudentDetail();
             studentDetail.FName = names[0];
-            studentDetail.LName = names[1];
+
+            if (names.Length >= 2)
+            {
+                studentDetail.LName = names[1];
+            }
+            
             studentDetail.ClassId = model.class_id;
             studentDetail.Email = model.email;
             studentDetail.Password = model.password;
@@ -84,14 +117,14 @@ namespace SchoolApp.WebApi.Controllers
             _schoolDbContext.StudentDetails.Add(studentDetail);
             _schoolDbContext.SaveChanges();
 
-            if (model.subject?.Count > 0)
+            if (model.subject != null && model.subject.Count > 0)
             {
                 
                 foreach (var subjectId in model.subject)
                 {
                     var studentSubject = new StudentSubject
                     {
-                         StudentId = studentDetail.Id,
+                         StudentId = studentDetail.Id, // student was saved above
                          SubjectId = subjectId
                          
                     };
@@ -118,7 +151,12 @@ namespace SchoolApp.WebApi.Controllers
             var studentDetail = _schoolDbContext.StudentDetails.FirstOrDefault(p => p.Id == id);
 
             studentDetail.FName = names[0];
-            studentDetail.LName = names[1];
+
+            if (names.Length >= 2)
+            {
+                studentDetail.LName = names[1];
+            }
+
             studentDetail.ClassId = model.class_id;
             studentDetail.Email = model.email;
             studentDetail.Password = model.password;

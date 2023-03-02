@@ -11,6 +11,14 @@ public partial class StudentDetail
 
     public string LName { get; set; } = null!;
 
+    public string FullName
+    {
+        get
+        {
+            return string.Concat(FName, " ", LName);
+        }
+    }
+
     public string? Email { get; set; }
 
     public string? Password { get; set; }
